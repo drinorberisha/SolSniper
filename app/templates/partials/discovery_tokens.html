@@ -1,0 +1,60 @@
+{% if tokens %}
+<div class="overflow-x-auto">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="text-gray-400 border-b border-gray-700">
+                <th class="text-left py-2 px-2">Symbol</th>
+                <th class="text-left py-2 px-2">Address</th>
+                <th class="text-right py-2 px-2">Gain</th>
+                <th class="text-right py-2 px-2">Market Cap</th>
+                <th class="text-right py-2 px-2">DEX</th>
+                <th class="text-right py-2 px-2">Buyers</th>
+                <th class="text-center py-2 px-2">Status</th>
+                <th class="text-right py-2 px-2">Found</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for token in tokens %}
+            <tr class="border-b border-gray-800 hover:bg-gray-800/50">
+                <td class="py-2 px-2 font-bold text-green-400">{{ token.symbol }}</td>
+                <td class="py-2 px-2">
+                    <span class="text-gray-400 text-xs cursor-pointer hover:text-white"
+                          onclick="navigator.clipboard.writeText('{{ token.address }}')">
+                        {{ token.address[:12] }}...
+                    </span>
+                </td>
+                <td class="py-2 px-2 text-right font-bold
+                    {% if token.gain_multiple >= 200 %}text-green-400
+                    {% elif token.gain_multiple >= 100 %}text-yellow-400
+                    {% else %}text-gray-300{% endif %}">
+                    {{ token.gain_multiple | round(0) | int }}x
+                </td>
+                <td class="py-2 px-2 text-right text-gray-300">
+                    ${{ "{:,.0f}".format(token.current_market_cap) }}
+                </td>
+                <td class="py-2 px-2 text-right text-xs text-gray-500">{{ token.dex or '?' }}</td>
+                <td class="py-2 px-2 text-right">{{ token.early_buyers_found }}</td>
+                <td class="py-2 px-2 text-center">
+                    {% if token.status.value == 'done' %}
+                    <span class="text-xs px-2 py-0.5 bg-green-900 text-green-300 rounded-full">done</span>
+                    {% elif token.status.value == 'processing' %}
+                    <span class="text-xs px-2 py-0.5 bg-yellow-900 text-yellow-300 rounded-full">processing</span>
+                    {% elif token.status.value == 'error' %}
+                    <span class="text-xs px-2 py-0.5 bg-red-900 text-red-300 rounded-full">error</span>
+                    {% else %}
+                    <span class="text-xs px-2 py-0.5 bg-gray-700 text-gray-400 rounded-full">pending</span>
+                    {% endif %}
+                </td>
+                <td class="py-2 px-2 text-right text-[10px] text-gray-500 whitespace-nowrap">
+                    {{ token.discovered_at.strftime('%b %d %H:%M') if token.discovered_at else '—' }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="text-gray-500 text-center py-8">
+    No winning tokens discovered yet. Click "Run Discovery" to start.
+</div>
+{% endif %}

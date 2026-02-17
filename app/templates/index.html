@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solana Sniper Dashboard</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+        .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white font-sans min-h-screen">
+    <div class="container mx-auto p-4">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8 border-b border-gray-700 pb-4">
+            <h1 class="text-3xl font-bold text-green-400">Solana Sniper 🎯</h1>
+            <div class="flex items-center space-x-4">
+                <span class="px-3 py-1 bg-green-900 text-green-300 rounded-full text-sm">System: Active</span>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Feed Section -->
+            <section class="lg:col-span-2 space-y-4">
+                <h2 class="text-xl font-semibold border-b border-gray-700 pb-2">Live Signals</h2>
+                <div id="signal-feed" 
+                     class="space-y-2"
+                     hx-get="/signals/latest" 
+                     hx-trigger="every 2s">
+                    <!-- HTMX will load signals here -->
+                    <div class="text-gray-500 text-center py-4">Waiting for signals...</div>
+                </div>
+            </section>
+
+            <!-- Sidebar: Tracked Wallets -->
+            <section class="space-y-6">
+                <div class="bg-gray-800 p-4 rounded-lg">
+                    <h2 class="text-xl font-semibold mb-4">Add Smart Wallet</h2>
+                    <form hx-post="/wallets" hx-target="#wallet-list" class="space-y-2">
+                        <input type="text" name="address" placeholder="Wallet Address" required
+                               class="w-full bg-gray-700 border border-gray-600 rounded p-2 text-sm focus:outline-none focus:border-green-500">
+                        <input type="text" name="label" placeholder="Label (e.g. 'Whale 1')" required
+                               class="w-full bg-gray-700 border border-gray-600 rounded p-2 text-sm focus:outline-none focus:border-green-500">
+                        <button type="submit" 
+                                class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition">
+                            Track Wallet
+                        </button>
+                    </form>
+                </div>
+
+                <div class="bg-gray-800 p-4 rounded-lg">
+                    <h2 class="text-xl font-semibold mb-4">Tracked Wallets</h2>
+                    <div id="wallet-list" class="max-h-[420px] overflow-y-auto pr-1 scrollbar-thin" hx-get="/wallets" hx-trigger="load">
+                        <!-- Wallet list loads here -->
+                        <div class="text-gray-500 text-sm">Loading wallets...</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Smart Wallet Discovery Section -->
+        <section class="mt-10 border-t border-gray-700 pt-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-purple-400">Smart Wallet Discovery 🔍</h2>
+                <div class="flex items-center space-x-3">
+                    <button hx-post="/discovery/run"
+                            hx-target="#discovery-status"
+                            hx-swap="innerHTML"
+                            hx-indicator="#discovery-spinner"
+                            class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded transition-colors">
+                        Run Discovery
+                    </button>
+                    <svg id="discovery-spinner" class="htmx-indicator animate-spin h-5 w-5 text-purple-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Discovery Stats -->
+            <div id="discovery-status"
+                 hx-get="/discovery/status"
+                 hx-trigger="load, every 10s">
+                <div class="text-gray-500 text-center py-4">Loading discovery stats...</div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
+                <!-- Discovered Winning Tokens -->
+                <div class="bg-gray-800/50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-green-400 mb-3">Winning Tokens</h3>
+                    <div id="tokens-table"
+                         hx-get="/discovery/tokens"
+                         hx-trigger="load, every 15s">
+                        <div class="text-gray-500 text-sm text-center py-4">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- Smart Wallet Candidates -->
+                <div class="bg-gray-800/50 rounded-lg p-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-lg font-semibold text-yellow-400">Smart Wallet Candidates</h3>
+                        <button hx-post="/discovery/promote-all"
+                                hx-target="#candidates-table"
+                                hx-swap="innerHTML"
+                                class="text-xs px-3 py-1 bg-green-700 hover:bg-green-600 text-white rounded transition-colors">
+                            Track All
+                        </button>
+                    </div>
+                    <div id="candidates-table"
+                         hx-get="/discovery/candidates"
+                         hx-trigger="load, every 15s">
+                        <div class="text-gray-500 text-sm text-center py-4">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

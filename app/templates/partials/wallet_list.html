@@ -1,0 +1,28 @@
+{% for wallet in wallets %}
+<div class="bg-gray-700 p-3 rounded mb-2">
+    <div class="flex justify-between items-center">
+        <div class="min-w-0 flex-1 mr-2">
+            <div class="font-bold text-sm truncate">{{ wallet.label }}</div>
+            <div class="text-xs text-gray-400 font-mono cursor-pointer hover:text-white transition-colors"
+                 onclick="navigator.clipboard.writeText('{{ wallet.address }}'); this.innerText='Copied!'; setTimeout(() => this.innerText='{{ wallet.address[:16] }}...', 1200)">
+                {{ wallet.address[:16] }}...
+            </div>
+        </div>
+        <div class="flex items-center space-x-2 flex-shrink-0">
+            <span class="text-xs px-2 py-1 bg-green-900 text-green-300 rounded-full">{{ wallet.status.value }}</span>
+            <button hx-delete="/wallets/{{ wallet.address }}"
+                    hx-target="#wallet-list"
+                    hx-confirm="Delete {{ wallet.label }}?"
+                    class="text-xs px-2 py-1 bg-red-900 hover:bg-red-700 text-red-300 rounded-full transition">
+                ✕
+            </button>
+        </div>
+    </div>
+    <div class="flex items-center justify-between mt-1.5 text-[10px] text-gray-500">
+        <span>{{ wallet.source or 'manual' }}</span>
+        <span>{{ wallet.tracked_at.strftime('%b %d, %Y %H:%M') if wallet.tracked_at else '—' }}</span>
+    </div>
+</div>
+{% else %}
+<div class="text-gray-500 text-sm">No wallets tracked.</div>
+{% endfor %}

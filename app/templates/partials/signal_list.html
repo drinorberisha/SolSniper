@@ -1,0 +1,52 @@
+{% for entry in entries %}
+{% set s = entry.signal %}
+{% set t = entry.token %}
+<div class="bg-gray-800 p-4 rounded border border-gray-700 hover:border-gray-500 transition-colors">
+    <div class="flex justify-between items-start">
+        <div class="min-w-0 flex-1">
+            <!-- Symbol + Status -->
+            <div class="flex items-center gap-2 mb-1">
+                <span class="font-bold text-lg text-green-400">{{ t.symbol if t else '???' }}</span>
+                {% if t %}
+                <span class="text-[10px] px-1.5 py-0.5 rounded-full
+                    {% if t.status.value == 'graduated' %}bg-green-900 text-green-300
+                    {% elif t.status.value == 'rugged' %}bg-red-900 text-red-300
+                    {% else %}bg-yellow-900 text-yellow-300{% endif %}">{{ t.status.value }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Address (click to copy) -->
+            <div class="text-xs text-gray-400 font-mono cursor-pointer hover:text-white transition-colors mb-1.5"
+                 onclick="navigator.clipboard.writeText('{{ s.token_address }}'); this.innerText='Copied!'; setTimeout(() => this.innerText='{{ s.token_address[:20] }}...', 1200)">
+                {{ s.token_address[:20] }}...
+            </div>
+
+            <!-- Metrics -->
+            <div class="flex items-center gap-3 text-xs">
+                <span class="{% if s.confidence_score >= 80 %}text-green-400{% elif s.confidence_score >= 50 %}text-yellow-400{% else %}text-gray-400{% endif %}">
+                    Score: <strong>{{ s.confidence_score }}</strong>
+                </span>
+                <span class="text-gray-400">Wallets: <strong>{{ s.smart_wallet_count }}</strong></span>
+                {% if t and t.market_cap_at_scan %}
+                <span class="text-gray-400">MC: <strong>${{ "{:,.0f}".format(t.market_cap_at_scan) }}</strong></span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right side: time + links -->
+        <div class="flex flex-col items-end gap-1.5 ml-3 flex-shrink-0">
+            <span class="text-xs text-gray-500">{{ s.timestamp.strftime('%H:%M:%S') }}</span>
+            <div class="flex gap-1">
+                <a href="https://photon-sol.tinyastro.io/en/lp/{{ s.token_address }}"
+                   target="_blank" rel="noopener"
+                   class="text-[10px] px-2 py-0.5 bg-blue-900 text-blue-300 rounded hover:bg-blue-800 transition-colors">Photon</a>
+                <a href="https://dexscreener.com/solana/{{ s.token_address }}"
+                   target="_blank" rel="noopener"
+                   class="text-[10px] px-2 py-0.5 bg-purple-900 text-purple-300 rounded hover:bg-purple-800 transition-colors">DexS</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-gray-500 text-center py-4">No signals yet...</div>
+{% endfor %}

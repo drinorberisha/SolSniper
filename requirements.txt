@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+sqlmodel
+pydantic-settings
+psycopg2-binary
+jinja2
+httpx
+solana
+solders
+websockets
+aiohttp
